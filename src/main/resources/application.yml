@@ -1,0 +1,32 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: bankbackend
+  servlet:
+    multipart:
+      max-file-size: 10MB
+  #?????
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/yb_picture
+    username: root
+    password: 1234
+knife4j:
+  enable: true
+  openapi:
+    version: v1.0
+    group:
+      default:
+        group-name: ????
+        api-rule: package
+        api-rule-resources:
+          - com.king.bankbackend.controller
+# ????????????????
+#cos:
+#  client:
+#    host:
+#    secretId:
+#    secretKey:
+#    region:
+#    bucket:
