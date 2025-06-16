@@ -1,3 +1,6 @@
+-- 创建数据库（如果不存在）
+CREATE DATABASE IF NOT EXISTS bank;
+USE bank;
 -- 创建用户信息表
 CREATE TABLE userInfo
 (
@@ -52,7 +55,7 @@ CREATE TABLE tradeInfo
 (
     tradeID  SERIAL PRIMARY KEY COMMENT '交易ID（自增主键）',
     tradeDate  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '交易日期（默认当前时间）',
-    tradeType  CHAR(6) COMMENT '交易类型（存入/支取）',
+    tradeType  CHAR(6) COMMENT '交易类型（存款/取款/转账）',
     cardID  CHAR(16) COMMENT '银行卡号（16位，逻辑外键）',
     tradeMoney  NUMERIC(18,2) COMMENT '交易金额（＞0元）',
     remark  TEXT COMMENT '交易备注'
@@ -60,7 +63,7 @@ CREATE TABLE tradeInfo
 
 -- 交易信息表约束
 ALTER TABLE tradeInfo
-    ADD CONSTRAINT ck_trade_type CHECK (tradeType IN ('存入', '支取')),
+    ADD CONSTRAINT ck_trade_type CHECK (tradeType IN ('存款', '取款','转账')),
     ADD CONSTRAINT ck_trade_money CHECK (tradeMoney > 0),
     ADD CONSTRAINT ck_trade_card_format CHECK (cardID REGEXP '^10103576[0-9]{8}$');
 
