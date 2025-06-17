@@ -1,7 +1,6 @@
 package com.king.bankbackend.mapper;
 
 
-
 import com.king.bankbackend.model.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;

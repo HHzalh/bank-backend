@@ -4,5 +4,4 @@
 <mapper namespace="com.king.bankbackend.mapper.CustomerMapper">
 
 
-
 </mapper>

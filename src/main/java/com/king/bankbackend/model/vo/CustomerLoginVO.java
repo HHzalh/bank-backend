@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "员工登录返回的数据格式")
+@Schema(description = "用户登录返回的数据格式")
 public class CustomerLoginVO {
 
     @Schema(description = "主键值")

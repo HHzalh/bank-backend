@@ -7,12 +7,9 @@ import com.king.bankbackend.mapper.CustomerMapper;
 import com.king.bankbackend.model.dto.CustomerLoginDTO;
 import com.king.bankbackend.model.entity.User;
 import com.king.bankbackend.service.CustomerService;
-import com.sky.constant.MessageConstant;
-import com.sky.exception.PasswordErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 @Slf4j
 @Service
@@ -23,18 +20,18 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerMapper customerMapper;
 
     /**
-     * 管理员登录
+     * 用户登录
      *
      * @param customerLoginDTO
      * @return
      */
-    public User login(CustomerLoginDTO customerLoginDTO){
+    public User login(CustomerLoginDTO customerLoginDTO) {
         String account = customerLoginDTO.getAccount();
         String password = customerLoginDTO.getPassword();
 
         //根据账户查询数据库中的数据
         User user = customerMapper.getByAccount(account);
-        if(user==null){
+        if (user == null) {
             //账号不存在
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
@@ -54,7 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
      */
     public User getAdminInfo() {
 
-        Long curId= BaseContext.getCurrentId();
+        Long curId = BaseContext.getCurrentId();
 
         //根据账户查询数据库中的数据
         User user = customerMapper.getById(curId);

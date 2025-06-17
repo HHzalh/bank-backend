@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/")
 public class testcontroller {
     @GetMapping("/health")
-    public BaseResponse<Integer> heart(){
+    public BaseResponse<Integer> heart() {
         return Result.success(1);
     }
 }

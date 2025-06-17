@@ -1,10 +1,10 @@
 package com.king.bankbackend.interceptor;
 
 
+import com.king.bankbackend.constant.JwtClaimsConstant;
 import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.utils.JwtUtil;
-import com.sky.constant.JwtClaimsConstant;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,7 +45,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
         try {
             log.info("jwt校验: {}", token);
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
-            Long adminId = Long.valueOf(claims.get(JwtClaimsConstant.EMP_ID).toString());
+            Long adminId = Long.valueOf(claims.get(JwtClaimsConstant.Admin_ID).toString());
             log.info("当前管理员id: {}", adminId);
             BaseContext.setCurrentId(adminId);
             return true;
