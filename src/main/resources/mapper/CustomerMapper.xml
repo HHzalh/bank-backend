@@ -3,5 +3,32 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.king.bankbackend.mapper.CustomerMapper">
 
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userid">
+        insert into userinfo (userName, PID, gender, telephone, address, imageUrl, role, account, password, create_time,
+                              update_time)
+        values (#{username}, #{pid}, #{gender}, #{telephone}, #{address}, #{imageurl}, #{role}, #{account}, #{password},
+                #{createTime}, #{updateTime})
+    </insert>
+    <update id="update">
+        update userinfo
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="pid != null">pid = #{pid},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="telephone != null">telephone = #{telephone},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="imageurl != null">imageUrl = #{imageurl},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="account != null">account = #{account},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="updateTime != null">update_time = #{updateTime}</if>
+        </set>
+        where userId = #{userid}
+    </update>
 
+    <delete id="deleteById">
+        delete
+        from userinfo
+        where userid = #{id}
+    </delete>
 </mapper>

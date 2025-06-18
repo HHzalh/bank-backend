@@ -38,9 +38,9 @@ CREATE TABLE deposit
 
 ALTER TABLE deposit
     ADD CONSTRAINT ck_deposit_types CHECK (
-                savingName IN ('活期', '定活两便') OR
-                savingName REGEXP '^(活期|定期|零存整取)[一二三四五六七八九十0-9]+年?$'
-    );
+        savingName IN ('活期', '定活两便') OR
+        savingName REGEXP '^(活期|定期|零存整取)[一二三四五六七八九十0-9]+年?$'
+        );
 
 -- 创建银行卡信息表
 CREATE TABLE cardInfo
@@ -60,7 +60,8 @@ CREATE TABLE cardInfo
 
 ALTER TABLE cardInfo
     ADD CONSTRAINT ck_card_pass_format CHECK (pass REGEXP '^[0-9]{6}$'),
-    ADD CONSTRAINT ck_card_format CHECK (cardID REGEXP '^10103576[0-9]{8}$');
+    ADD CONSTRAINT ck_card_format CHECK (cardID REGEXP '^10103576[0-9]{8}$'),
+    ADD COLUMN customerName VARCHAR(20) NULL COMMENT '用户姓名';
 
 -- 创建交易信息表
 CREATE TABLE tradeInfo

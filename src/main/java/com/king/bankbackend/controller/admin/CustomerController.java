@@ -3,7 +3,11 @@ package com.king.bankbackend.controller.admin;
 import com.king.bankbackend.common.BaseResponse;
 import com.king.bankbackend.common.Result;
 import com.king.bankbackend.constant.JwtClaimsConstant;
+import com.king.bankbackend.exception.ErrorCode;
+import com.king.bankbackend.exception.ThrowUtils;
+import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.CustomerLoginDTO;
+import com.king.bankbackend.model.dto.CustomerUpdateDTO;
 import com.king.bankbackend.model.entity.User;
 import com.king.bankbackend.model.vo.CustomerLoginVO;
 import com.king.bankbackend.properties.JwtProperties;
@@ -37,6 +41,7 @@ public class CustomerController {
      */
     @PostMapping("/login")
     public BaseResponse<CustomerLoginVO> login(@RequestBody CustomerLoginDTO customerLoginDTO) {
+        ThrowUtils.throwIf(customerLoginDTO == null, ErrorCode.PARAMS_ERROR);
         //登录
         User user = customerService.login(customerLoginDTO);
         //登录成功生成Jwt令牌
@@ -67,4 +72,40 @@ public class CustomerController {
         return Result.success(user);
     }
 
+    /**
+     * 新增用户
+     *
+     * @param customerDTO
+     * @return
+     */
+    @PostMapping("/addCustomer")
+    public BaseResponse addCustomer(@RequestBody CustomerDTO customerDTO) {
+        ThrowUtils.throwIf(customerDTO == null, ErrorCode.PARAMS_ERROR);
+        customerService.addCustomer(customerDTO);
+        return Result.success();
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param customerUpdateDTO
+     * @return
+     */
+    @PutMapping("/updateCustomer")
+    public BaseResponse updateCustomer(@RequestBody CustomerUpdateDTO customerUpdateDTO) {
+        customerService.updateCustomer(customerUpdateDTO);
+        return Result.success();
+    }
+
+    /**
+     * 删除用户
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/deleteCustomer/{id}")
+    public BaseResponse deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(id);
+        return Result.success();
+    }
 }
