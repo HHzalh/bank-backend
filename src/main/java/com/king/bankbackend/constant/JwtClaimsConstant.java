@@ -13,4 +13,5 @@ public class JwtClaimsConstant {
      * 用户ID
      */
     public static final String USER_ID = "userId";
+
 }

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/customer")
+@RequestMapping("/Admin/customer")
 @Slf4j
 public class CustomerController {
 

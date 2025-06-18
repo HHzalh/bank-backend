@@ -2,6 +2,7 @@ package com.king.bankbackend.config;
 
 
 import com.king.bankbackend.interceptor.JwtTokenAdminInterceptor;
+import com.king.bankbackend.interceptor.JwtTokenUserInterceptor;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -23,6 +24,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Autowired
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
 
+    @Autowired
+    private JwtTokenUserInterceptor jwtTokenUserInterceptor;
+
 
     /**
      * 注册自定义拦截器
@@ -32,9 +36,14 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
+        // 管理员拦截器
         registry.addInterceptor(jwtTokenAdminInterceptor)
-                .addPathPatterns("/admin/**")
-                .excludePathPatterns("/admin/customer/login");
+                .addPathPatterns("/Admin/**")
+                .excludePathPatterns("/Admin/customer/login");
+        // 用户拦截器
+        registry.addInterceptor(jwtTokenUserInterceptor)
+                .addPathPatterns("/User/**")
+                .excludePathPatterns("/User/user/login");
     }
 
     /**
