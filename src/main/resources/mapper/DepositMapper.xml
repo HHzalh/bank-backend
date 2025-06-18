@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.king.bankbackend.mapper.DepositMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="savingid">
+        insert into deposit (savingName, descrip, create_time, update_time)
+        values (#{savingname}, #{descrip}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update">
+        update deposit
+        <set>
+            <if test="savingname != null">
+                savingName = #{savingname},
+            </if>
+            <if test="descrip != null">
+                descrip = #{descrip},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        where savingid = #{savingid}
+    </update>
+
+    <delete id="deleteById">
+        delete
+        from deposit
+        where savingID = #{savingid}
+    </delete>
+
+    <select id="pageQuery" parameterType="com.king.bankbackend.model.dto.DepositQueryDTO"
+            resultType="com.king.bankbackend.model.vo.DepositQueryVO">
+        select * from deposit
+        <where>
+            <if test="depositQueryDTO.savingname != null and depositQueryDTO.savingname != ''">
+                and savingName like concat('%', #{depositQueryDTO.savingname}, '%')
+            </if>
+            <if test="beginDateTime != null">
+                and create_time &gt;= #{beginDateTime}
+            </if>
+            <if test="endDateTime != null">
+                and create_time &lt;= #{endDateTime}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper> 
