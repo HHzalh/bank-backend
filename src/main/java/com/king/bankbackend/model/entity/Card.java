@@ -56,4 +56,8 @@ public class Card implements Serializable {
      * 更新时间
      */
     private LocalDateTime updateTime;
+    /**
+     * 用户名字
+     */
+    private String customername;
 }

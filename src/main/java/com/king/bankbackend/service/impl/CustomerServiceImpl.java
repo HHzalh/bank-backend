@@ -1,6 +1,11 @@
 package com.king.bankbackend.service.impl;
 
+
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.king.bankbackend.common.PageResult;
 import com.king.bankbackend.constant.ImageUrlConstant;
+import com.king.bankbackend.constant.LocalDateConstant;
 import com.king.bankbackend.constant.PasswordConstant;
 import com.king.bankbackend.constant.RoleConstant;
 import com.king.bankbackend.context.BaseContext;
@@ -9,8 +14,10 @@ import com.king.bankbackend.exception.ErrorCode;
 import com.king.bankbackend.mapper.CustomerMapper;
 import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.CustomerLoginDTO;
+import com.king.bankbackend.model.dto.CustomerQueryDTO;
 import com.king.bankbackend.model.dto.CustomerUpdateDTO;
 import com.king.bankbackend.model.entity.User;
+import com.king.bankbackend.model.vo.CustomerQueryVO;
 import com.king.bankbackend.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -18,6 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
 
 @Slf4j
 @Service
@@ -145,4 +158,48 @@ public class CustomerServiceImpl implements CustomerService {
         customerMapper.deleteById(id);
         log.info("用户删除成功，ID：{}", id);
     }
+
+    /**
+     * 分页查询用户信息
+     *
+     * @param customerQueryDTO
+     * @param begin
+     * @param end
+     * @return
+     */
+    public PageResult pageCustomer(CustomerQueryDTO customerQueryDTO, LocalDate begin, LocalDate end) {
+        log.info("分页查询用户信息，查询条件：{}{}{}", customerQueryDTO, begin, end);
+
+        // 设置默认分页参数
+        if (customerQueryDTO.getPage() <= 0) {
+            customerQueryDTO.setPage(1);
+        }
+        if (customerQueryDTO.getPageSize() <= 0) {
+            customerQueryDTO.setPageSize(10);
+        }
+        LocalDateTime beginTime = null;
+        LocalDateTime endTime = null;
+
+        if (begin != null) {
+            beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        } else {
+            beginTime = LocalDateTime.of(LocalDateConstant.DEFAULT_TIMESTAMP, LocalTime.MIN);
+        }
+
+        if (end != null) {
+            endTime = LocalDateTime.of(end, LocalTime.MAX);
+        } else {
+            endTime = LocalDateTime.now();
+        }
+
+        // 使用PageHelper进行分页
+        PageHelper.startPage(customerQueryDTO.getPage(), customerQueryDTO.getPageSize());
+
+        Page<CustomerQueryVO> page = customerMapper.pageQuery(customerQueryDTO, beginTime, endTime);
+        long total = page.getTotal();
+        List<CustomerQueryVO> records = page.getResult();
+
+        return new PageResult(total, records);
+    }
 }
+

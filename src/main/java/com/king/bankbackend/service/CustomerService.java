@@ -1,9 +1,13 @@
 package com.king.bankbackend.service;
 
+import com.king.bankbackend.common.PageResult;
 import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.CustomerLoginDTO;
+import com.king.bankbackend.model.dto.CustomerQueryDTO;
 import com.king.bankbackend.model.dto.CustomerUpdateDTO;
 import com.king.bankbackend.model.entity.User;
+
+import java.time.LocalDate;
 
 public interface CustomerService {
 
@@ -42,4 +46,14 @@ public interface CustomerService {
      * @param id
      */
     void deleteCustomer(Long id);
+
+    /**
+     * 分页查询用户信息
+     *
+     * @param customerQueryDTO
+     * @param begin
+     * @param end
+     * @return
+     */
+    PageResult pageCustomer(CustomerQueryDTO customerQueryDTO, LocalDate begin, LocalDate end);
 }

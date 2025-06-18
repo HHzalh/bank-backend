@@ -31,4 +31,35 @@
         from userinfo
         where userid = #{id}
     </delete>
+
+    <select id="pageQuery" parameterType="com.king.bankbackend.model.dto.CustomerQueryDTO"
+            resultType="com.king.bankbackend.model.vo.CustomerQueryVO">
+        select * from userinfo
+        <where>
+            <if test="customerQueryDTO.username != null and customerQueryDTO.username != ''">
+                and userName like concat('%', #{customerQueryDTO.username}, '%')
+            </if>
+            <if test="customerQueryDTO.pid != null and customerQueryDTO.pid != ''">
+                and PID like concat('%', #{customerQueryDTO.pid}, '%')
+            </if>
+            <if test="customerQueryDTO.gender != null and customerQueryDTO.gender != ''">
+                and gender like concat('%', #{customerQueryDTO.gender}, '%')
+            </if>
+            <if test="customerQueryDTO.account != null and customerQueryDTO.account != ''">
+                and account like concat('%', #{customerQueryDTO.account}, '%')
+            </if>
+            <if test="customerQueryDTO.role != null and customerQueryDTO.role != ''">
+                and role like concat('%', #{customerQueryDTO.role}, '%')
+            </if>
+
+            <if test="beginDateTime != null">
+                and create_time &gt;= #{beginDateTime}
+            </if>
+            <if test="endDateTime != null">
+                and create_time &lt;= #{endDateTime}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
 </mapper>

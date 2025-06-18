@@ -1,11 +1,16 @@
 package com.king.bankbackend.mapper;
 
 
+import com.github.pagehelper.Page;
 import com.king.bankbackend.annotation.AutoFill;
 import com.king.bankbackend.constant.OperationType;
+import com.king.bankbackend.model.dto.CustomerQueryDTO;
 import com.king.bankbackend.model.entity.User;
+import com.king.bankbackend.model.vo.CustomerQueryVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.time.LocalDateTime;
 
 @Mapper
 public interface CustomerMapper {
@@ -51,4 +56,14 @@ public interface CustomerMapper {
      * @param id
      */
     void deleteById(Long id);
+
+    /**
+     * 条件查询用户列表
+     *
+     * @param customerQueryDTO
+     * @param beginDateTime
+     * @param endDateTime
+     * @return
+     */
+    Page<CustomerQueryVO> pageQuery(CustomerQueryDTO customerQueryDTO, LocalDateTime beginDateTime, LocalDateTime endDateTime);
 }
