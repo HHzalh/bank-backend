@@ -8,7 +8,6 @@ import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.vo.CardListVo;
 import com.king.bankbackend.model.vo.CardQueryVO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
@@ -78,8 +77,5 @@ public interface CardMapper {
      * @param endDateTime
      * @return
      */
-    Page<CardQueryVO> pageQuery(
-            @Param("cardQueryDTO") CardQueryDTO cardQueryDTO,
-            @Param("beginDateTime") LocalDateTime beginDateTime,
-            @Param("endDateTime") LocalDateTime endDateTime);
+    Page<CardQueryVO> pageQuery(CardQueryDTO cardQueryDTO, LocalDateTime beginDateTime, LocalDateTime endDateTime);
 } 

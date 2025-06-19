@@ -29,7 +29,7 @@ public class Trade implements Serializable {
      */
     private String cardid;
     /**
-     * 交易金额（＞0元）
+     * 交易金额（>=0元）
      */
     private BigDecimal trademoney;
     /**

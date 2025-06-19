@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.king.bankbackend.mapper.TradeMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="tradeid">
+        insert into tradeinfo (tradeDate, tradeType, cardID, tradeMoney, remark, create_time, update_time)
+        values (#{tradedate}, #{tradetype}, #{cardid}, #{trademoney}, #{remark}, #{createTime}, #{updateTime})
+    </insert>
+
+    <delete id="deleteById">
+        delete
+        from tradeinfo
+        where tradeID = #{tradeid}
+    </delete>
+
+    <select id="pageQuery" parameterType="com.king.bankbackend.model.dto.TradeQueryDTO"
+            resultType="com.king.bankbackend.model.vo.TradeQueryVO">
+        select * from tradeinfo t
+        <where>
+            <if test="tradeQueryDTO.tradeid != null">
+                and t.tradeID like concat('%', #{tradeQueryDTO.cardid}, '%')
+            </if>
+            <if test="tradeQueryDTO.cardid != null">
+                and t.cardID like concat('%', #{tradeQueryDTO.cardid}, '%')
+            </if>
+            <if test="tradeQueryDTO.tradetype != null">
+                and t.tradeType like concat('%', #{tradeQueryDTO.tradetype}, '%')
+            </if>
+            <if test="tradeQueryDTO.minMoney != null">
+                and t.tradeMoney &gt;= #{tradeQueryDTO.minMoney}
+            </if>
+            <if test="tradeQueryDTO.maxMoney != null">
+                and t.tradeMoney &lt;= #{tradeQueryDTO.maxMoney}
+            </if>
+            <if test="tradeQueryDTO.remark != null">
+                and t.remark like concat('%', #{tradeQueryDTO.remark}, '%')
+            </if>
+            <if test="beginDateTime != null">
+                and t.create_time &gt;= #{beginDateTime}
+            </if>
+            <if test="endDateTime != null">
+                and t.create_time &lt;= #{endDateTime}
+            </if>
+        </where>
+        ORDER BY t.create_time DESC
+    </select>
+
+</mapper> 
