@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.king.bankbackend.mapper.UserMapper">
+    <!-- 更新用户信息 -->
+    <update id="updateProfile" parameterType="map">
+        UPDATE userInfo
+        <set>
+            <if test="username != null">userName = #{username},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="telephone != null">telephone = #{telephone},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="imageurl != null">imageUrl = #{imageurl},</if>
+            update_time = NOW()
+        </set>
+        WHERE userID = #{userId}
+    </update>
+</mapper>

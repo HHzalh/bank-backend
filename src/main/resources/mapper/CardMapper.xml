@@ -57,4 +57,29 @@
         </where>
         ORDER BY c.create_time DESC
     </select>
+
+    <!-- 获取银行卡密码 -->
+    <select id="getCardPass" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT pass FROM cardInfo WHERE cardID = #{cardid}
+    </select>
+    <!-- 执行取款操作 -->
+    <update id="withdrawByCardId" parameterType="map">
+        UPDATE cardInfo
+        SET balance = balance - #{amount}
+        WHERE cardID = #{cardid}
+    </update>
+    <update id="updateProfile"></update>
+    <!--获取银行卡号-->
+    <select id="getCards" parameterType="java.lang.Long" resultType="com.king.bankbackend.model.vo.CardVO">
+        SELECT
+            cardID ,
+            balance,
+            curID ,
+            savingID ,
+            IsReportLoss
+        FROM
+            cardInfo
+        WHERE
+            customerID = #{userId}
+    </select>
 </mapper> 

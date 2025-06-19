@@ -7,8 +7,11 @@ import com.king.bankbackend.model.dto.CardQueryDTO;
 import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.vo.CardListVo;
 import com.king.bankbackend.model.vo.CardQueryVO;
+import com.king.bankbackend.model.vo.CardVO;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +21,81 @@ import java.util.List;
  */
 @Mapper
 public interface CardMapper {
+
+
+    /**
+     * 存款
+     * @param cardid
+     * @param savingid
+     * @param amount
+     * @return
+     */
+    @Update("UPDATE cardInfo SET balance = balance + #{amount}, savingID = #{savingid} WHERE cardID = #{cardid}")
+    int depositByCardId(String cardid, Long savingid, Long amount);
+
+    /**
+     * 插入交易信息
+     * @param tradeType
+     * @param cardid
+     * @param amount
+     * @param remark
+     * @return
+     */
+    @Insert("INSERT INTO tradeInfo (tradeType, cardID, tradeMoney, remark) VALUES (#{tradeType}, #{cardid}, #{amount}, #{remark})")
+    int insertTradeRecord(String tradeType, String cardid, Long amount, String remark);
+
+    /**
+     * 获取银行卡余额
+     * @param cardid
+     * @return
+     */
+    @Select("SELECT balance FROM cardInfo WHERE cardID = #{cardid}")
+    Long getBalance(String cardid);
+
+    /**
+     * 获取银行卡密码
+     * @param cardid 银行卡号
+     * @return 密码
+     */
+    String getCardPass(String cardid);
+
+    /**
+     * 执行取款操作
+     * @param cardid 银行卡号
+     * @param amount 取款金额
+     */
+    void withdrawByCardId(String cardid, Long amount);
+
+    /**
+     * 向指定银行卡号转账
+     * @param cardid
+     */
+    @Update("UPDATE cardInfo SET balance = balance + #{amount} WHERE cardID = #{cardid}")
+    void transfer(String cardid,Long amount);
+
+    /**
+     * 银行卡挂失
+     * @param cardId
+     * @return
+     */
+    @Update("UPDATE cardInfo SET IsReportLoss = #{isLoss} WHERE cardID = #{cardId}")
+    Boolean reportLossByCardId(String cardId,String isLoss);
+
+    /**
+     * 修改密码
+     * @param cardid
+     * @param newPassword
+     */
+
+    @Update("UPDATE cardInfo SET pass = #{newPassword} WHERE cardID = #{cardid}")
+    Boolean changedPwd(String cardid, String newPassword);
+
+    /**
+     * 根据用户ID查询银行卡列表
+     * @param userId 用户ID
+     * @return 银行卡列表
+     */
+    List<CardVO> getCards(Long userId);
 
     /**
      * 新增银行卡

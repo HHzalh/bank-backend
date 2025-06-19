@@ -1,13 +1,11 @@
 package com.king.bankbackend.service;
 
 import com.king.bankbackend.common.PageResult;
-import com.king.bankbackend.model.dto.CardDTO;
-import com.king.bankbackend.model.dto.CardQueryDTO;
-import com.king.bankbackend.model.dto.CardUpdatePwdDTO;
-import com.king.bankbackend.model.dto.CardUpdateStatusDTO;
+import com.king.bankbackend.model.dto.*;
 import com.king.bankbackend.model.vo.CardListVo;
 import com.king.bankbackend.model.vo.CardQueryVO;
 import com.king.bankbackend.model.vo.CardStatusVo;
+import com.king.bankbackend.model.vo.CardVO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +14,53 @@ import java.util.List;
  * 银行卡服务接口
  */
 public interface CardService {
+
+    /**
+     * 存款
+     * @param depositRequest
+     * @return
+     */
+    Long depositByCardId(DepositRequest depositRequest);
+
+    /**
+     * 取款
+     * @param withdrawRequest
+     * @return
+     */
+    Long withdrawByCardId(WithdrawRequest withdrawRequest);
+
+    /**
+     * 转账
+     * @param transferRequest
+     */
+    Boolean transfer(TransferRequest transferRequest);
+
+    /**
+     * 根据卡号查询余额
+     * @param cardId
+     * @return
+     */
+    Long getBalanceByCardId(String cardId);
+
+    /**
+     * 挂失银行卡
+     * @param reportLossRequest
+     */
+    Boolean reportLossByCardId(ReportLossRequest reportLossRequest);
+
+    /**
+     * 修改银行卡密码
+     * @param changedPwdRequest
+     * @return
+     */
+    Boolean changedPwd(ChangedPwdRequest changedPwdRequest);
+
+
+    /**
+     * 获取当前用户银行卡集合
+     * @return
+     */
+    List<CardVO> getCards();
 
     /**
      * 新增银行卡

@@ -6,25 +6,26 @@ import com.king.bankbackend.common.PageResult;
 import com.king.bankbackend.constant.CardConstant;
 import com.king.bankbackend.constant.LocalDateConstant;
 import com.king.bankbackend.constant.PasswordConstant;
+import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.exception.BusinessException;
 import com.king.bankbackend.exception.ErrorCode;
+import com.king.bankbackend.exception.ThrowUtils;
 import com.king.bankbackend.mapper.CardMapper;
 import com.king.bankbackend.mapper.CustomerMapper;
-import com.king.bankbackend.model.dto.CardDTO;
-import com.king.bankbackend.model.dto.CardQueryDTO;
-import com.king.bankbackend.model.dto.CardUpdatePwdDTO;
-import com.king.bankbackend.model.dto.CardUpdateStatusDTO;
+import com.king.bankbackend.model.dto.*;
 import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.entity.User;
 import com.king.bankbackend.model.vo.CardListVo;
 import com.king.bankbackend.model.vo.CardQueryVO;
 import com.king.bankbackend.model.vo.CardStatusVo;
+import com.king.bankbackend.model.vo.CardVO;
 import com.king.bankbackend.service.CardService;
 import com.king.bankbackend.utils.BankCardIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
@@ -46,6 +47,170 @@ public class CardServiceImpl implements CardService {
     @Autowired
     private CustomerMapper customerMapper;
 
+
+    /**
+     * 存款
+     * @param depositRequest
+     * @return
+     */
+    @Override
+    public Long depositByCardId(DepositRequest depositRequest) {
+        String cardid = depositRequest.getCardid();
+        Long savingid = depositRequest.getSavingid();
+        Long amount = depositRequest.getAmount();
+        String remark = depositRequest.getRemark();
+        ThrowUtils.throwIf(cardid == null,ErrorCode.PARAMS_ERROR,"银行卡号不能为空");
+        ThrowUtils.throwIf(amount < 0,ErrorCode.PARAMS_ERROR,"存款金额不能小于0");
+        // 执行存款操作
+        cardMapper.depositByCardId(cardid, savingid, amount);
+
+        // 插入交易记录
+        cardMapper.insertTradeRecord("存款", cardid, amount, remark);
+
+        // 返回当前余额
+        return cardMapper.getBalance(cardid);
+    }
+
+    /**
+     * 取款
+     * @param withdrawRequest
+     * @return
+     */
+    @Override
+    public Long withdrawByCardId(WithdrawRequest withdrawRequest) {
+        String cardid = withdrawRequest.getCardid();
+        Long amount = withdrawRequest.getAmount();
+        String pass = withdrawRequest.getPass();
+        String remark = withdrawRequest.getRemark();
+
+        // 验证密码
+        String correctPass = cardMapper.getCardPass(cardid);
+        if (!pass.equals(correctPass)) {
+            throw new IllegalArgumentException("密码错误");
+        }
+
+        // 检查余额是否足够（取款后余额必须至少为1元）
+        Long balance = cardMapper.getBalance(cardid);
+        if (balance == null || balance < amount || (balance - amount) < 1) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "余额不足，取款后余额必须至少保留1元");
+        }
+
+        // 执行取款操作
+        cardMapper.withdrawByCardId(cardid, amount);
+
+        // 插入交易记录
+        cardMapper.insertTradeRecord("取款", cardid, amount, remark);
+
+        // 返回当前余额
+        return cardMapper.getBalance(cardid);
+    }
+
+    /**
+     * 转账
+     * @param transferRequest
+     */
+    @Override
+    @Transactional
+    public Boolean transfer(TransferRequest transferRequest) {
+        //获取参数中的信息
+        String fromCardId = transferRequest.getFromCardId();
+        String password = transferRequest.getPassword();
+        String toCardId = transferRequest.getToCardId();
+        Long amount = transferRequest.getAmount();
+        //校验账号是否存在
+        Long balance1 = cardMapper.getBalance(fromCardId);
+        Long balance2 = cardMapper.getBalance(toCardId);
+        if(balance2==null||balance1==null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
+        }
+        //先校验密码是否正确
+        String cardPass = cardMapper.getCardPass(fromCardId);
+        if(!cardPass.equals(password)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+        }
+        if (amount <=0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "转账金额不能小于0");
+        }
+
+        // 检查转账银行卡当前余额是否足够（取款后余额必须至少为1元）
+        Long balance = cardMapper.getBalance(fromCardId);
+        if (balance == null || balance < amount || (balance - amount) < 1) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "余额不足");
+        }
+        //转账卡号扣款
+        cardMapper.withdrawByCardId(fromCardId, amount);
+        //收款账号收款
+        cardMapper.transfer(toCardId,amount);
+
+        return true;
+    }
+
+    /**
+     * 根据卡号查询余额
+     * @param cardId
+     * @return
+     */
+    @Override
+    public Long getBalanceByCardId(String cardId) {
+        Long balance = cardMapper.getBalance(cardId);
+        return balance;
+    }
+
+    /**
+     * 挂失银行卡
+     * @param reportLossRequest
+     * @return
+     */
+    @Override
+    public Boolean reportLossByCardId(ReportLossRequest reportLossRequest) {
+        String cardid = reportLossRequest.getCardid();
+        String isLoss = reportLossRequest.getIsLoss();
+        //校验账号是否存在
+        Long balance = cardMapper.getBalance(cardid);
+        if(balance == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
+        }
+        Boolean result = cardMapper.reportLossByCardId(cardid, isLoss);
+        return result;
+    }
+
+    /**
+     * 修改银行卡密码
+     * @param changedPwdRequest
+     * @return
+     */
+    @Override
+    public Boolean changedPwd(ChangedPwdRequest changedPwdRequest) {
+        String cardid = changedPwdRequest.getCardid();
+        String oldPassword = changedPwdRequest.getOldPassword();
+        String newPassword = changedPwdRequest.getNewPassword();
+        //判断卡号是否存在
+        Long balance = cardMapper.getBalance(cardid);
+        if (cardid == null || balance == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"银行卡号错误");
+        }
+        //判断密码是否正确
+        String cardPass = cardMapper.getCardPass(cardid);
+        if (!oldPassword.equals(cardPass)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码错误");
+        }
+        if (newPassword == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"新密码为空");
+        }
+        Boolean result = cardMapper.changedPwd(cardid, newPassword);
+        return result;
+    }
+
+    /**
+     * 获取当前用户银行卡集合
+     * @return
+     */
+    @Override
+    public List<CardVO> getCards() {
+        Long userId = BaseContext.getCurrentId();
+        List<CardVO> cards = cardMapper.getCards(userId);
+        return cards;
+    }
 
     /**
      * 新增银行卡
