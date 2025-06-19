@@ -7,5 +7,5 @@ import java.time.LocalDate;
  */
 public class LocalDateConstant {
 
-    public static final LocalDate DEFAULT_TIMESTAMP= LocalDate.of(1970, 1, 1);
+    public static final LocalDate DEFAULT_TIMESTAMP = LocalDate.of(1970, 1, 1);
 }

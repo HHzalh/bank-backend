@@ -12,6 +12,9 @@ import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 
+/**
+ * 客户数据访问层
+ */
 @Mapper
 public interface CustomerMapper {
 
@@ -32,6 +35,15 @@ public interface CustomerMapper {
      */
     @Select("select * from userinfo where userID = #{id}")
     User getById(Long id);
+
+    /**
+     * 通过身份证号获取用户信息
+     *
+     * @param pid
+     * @return
+     */
+    @Select("select * from userinfo where PID = #{pid}")
+    User getByPid(String pid);
 
     /**
      * 插入用户数据

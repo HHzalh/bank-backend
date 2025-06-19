@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.king.bankbackend.mapper.CardMapper">
+
+    <insert id="insert">
+        insert into cardinfo (cardID, curID, savingID, openDate, openMoney, balance, pass,
+                              IsReportLoss, customerId, customerName, create_time, update_time)
+        values (#{cardid}, #{curid}, #{savingid}, #{opendate}, #{openmoney}, #{balance}, #{pass},
+                #{isreportloss}, #{customerid}, #{customername}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update">
+        update cardinfo
+        <set>
+            <if test="pass != null">
+                pass = #{pass},
+            </if>
+            <if test="isreportloss != null">
+                isreportloss = #{isreportloss},
+            </if>
+        </set>
+        where cardID = #{cardid}
+    </update>
+
+    <delete id="deleteById">
+        delete
+        from cardinfo
+        where cardid = #{cardid}
+    </delete>
+
+    <select id="pageQuery" parameterType="com.king.bankbackend.model.dto.CardQueryDTO"
+            resultType="com.king.bankbackend.model.vo.CardQueryVO">
+        select * from cardinfo c
+        <where>
+            <if test="cardQueryDTO.cardid != null">
+                and c.cardID like concat('%', #{cardQueryDTO.cardid}, '%')
+            </if>
+            <if test="cardQueryDTO.curid != null">
+                and c.curID like concat('%', #{cardQueryDTO.curid}, '%')
+            </if>
+            <if test="cardQueryDTO.savingid != null">
+                and c.savingID like concat('%', #{cardQueryDTO.savingid}, '%')
+            </if>
+            <if test="cardQueryDTO.isreportloss != null">
+                and c.IsReportLoss like concat('%', #{cardQueryDTO.isreportloss}, '%')
+            </if>
+            <if test="cardQueryDTO.customername != null">
+                and c.customerName like concat('%', #{cardQueryDTO.customername}, '%')
+            </if>
+            <if test="beginDateTime != null">
+                and c.create_time &gt;= #{beginDateTime}
+            </if>
+            <if test="endDateTime != null">
+                and c.create_time &lt;= #{endDateTime}
+            </if>
+        </where>
+        ORDER BY c.create_time DESC
+    </select>
+</mapper> 

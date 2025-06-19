@@ -4,8 +4,8 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 
 @Data
@@ -27,13 +27,13 @@ public class Card implements Serializable {
     /**
      * 开户日期
      */
-    private Date opendate;
+    private LocalDate opendate;
     /**
      * 开户金额（≥1元）
      */
     private BigDecimal openmoney;
     /**
-     * 账户余额（≥1元）
+     * 账户余额（≥0元）
      */
     private BigDecimal balance;
     /**
@@ -41,13 +41,17 @@ public class Card implements Serializable {
      */
     private String pass;
     /**
-     * 是否挂失
+     * 是否挂失，默认为否表示为挂失、挂失为是
      */
-    private Object isreportloss;
+    private String isreportloss;
     /**
      * 用户ID
      */
     private Long customerid;
+    /**
+     * 用户名字
+     */
+    private String customername;
     /**
      * 创建时间
      */
@@ -56,8 +60,4 @@ public class Card implements Serializable {
      * 更新时间
      */
     private LocalDateTime updateTime;
-    /**
-     * 用户名字
-     */
-    private String customername;
 }
