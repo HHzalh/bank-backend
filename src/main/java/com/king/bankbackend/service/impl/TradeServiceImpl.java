@@ -80,6 +80,9 @@ public class TradeServiceImpl implements TradeService {
         if (tradeQueryDTO.getMinMoney().compareTo(BigDecimal.ZERO) == 0) {
             tradeQueryDTO.setMinMoney(null);
         }
+        if(tradeQueryDTO.getTradeid()==0){
+            tradeQueryDTO.setTradeid(null);
+        }
         LocalDateTime beginTime = null;
         LocalDateTime endTime = null;
 

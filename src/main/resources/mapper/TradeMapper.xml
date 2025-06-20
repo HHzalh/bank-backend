@@ -19,7 +19,7 @@
         select * from tradeinfo t
         <where>
             <if test="tradeQueryDTO.tradeid != null">
-                and t.tradeID like concat('%', #{tradeQueryDTO.cardid}, '%')
+                and t.tradeID like concat('%', #{tradeQueryDTO.tradeid}, '%')
             </if>
             <if test="tradeQueryDTO.cardid != null">
                 and t.cardID like concat('%', #{tradeQueryDTO.cardid}, '%')
