@@ -1,5 +1,6 @@
 package com.king.bankbackend.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -20,6 +21,7 @@ public class TradeQueryVO implements Serializable {
     /**
      * 交易日期
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime tradedate;
 
     /**

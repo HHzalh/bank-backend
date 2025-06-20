@@ -5,6 +5,7 @@ import com.king.bankbackend.model.dto.TradeQueryDTO;
 import com.king.bankbackend.model.entity.Trade;
 import com.king.bankbackend.model.vo.TradeQueryVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
@@ -33,7 +34,7 @@ public interface TradeMapper {
     Trade getById(Long tradeid);
 
     /**
-     * 范围分页查询交易记录
+     * 分页查询交易记录
      *
      * @param tradeQueryDTO
      * @param beginDateTime
