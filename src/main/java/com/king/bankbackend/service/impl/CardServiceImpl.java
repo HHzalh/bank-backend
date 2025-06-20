@@ -273,7 +273,7 @@ public class CardServiceImpl implements CardService {
         card.setCardid(cardId);
         card.setOpendate(LocalDate.now());
         card.setBalance(card.getOpenmoney());
-        card.setPass(PasswordConstant.DEFAULT_CARD_PASSWORD);
+        card.setPass(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_CARD_PASSWORD.getBytes()));
         card.setIsreportloss(CardConstant.DEFAULT_NOT_REPORT_LOSS);
         card.setCustomerid(user.getUserid());
         card.setCustomername(user.getUsername());
@@ -291,13 +291,18 @@ public class CardServiceImpl implements CardService {
         if (existingCard == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "银行卡不存在");
         }
-        if (!existingCard.getPass().equals(cardUpdatePwdDTO.getOldpass())) {
+
+        //解密原密码
+        String oldpassword = DigestUtils.md5DigestAsHex(cardUpdatePwdDTO.getOldpass().getBytes());
+        if (!existingCard.getPass().equals(oldpassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
         }
+
         // 封装数据
         Card card = new Card();
         BeanUtils.copyProperties(cardUpdatePwdDTO, card);
-        card.setPass(cardUpdatePwdDTO.getNewpass());
+        //加密新密码
+        card.setPass(DigestUtils.md5DigestAsHex(cardUpdatePwdDTO.getNewpass().getBytes()));
         cardMapper.update(card);
     }
 
