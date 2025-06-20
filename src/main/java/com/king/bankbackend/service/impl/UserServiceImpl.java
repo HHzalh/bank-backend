@@ -3,7 +3,6 @@ package com.king.bankbackend.service.impl;
 import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.exception.BusinessException;
 import com.king.bankbackend.exception.ErrorCode;
-import com.king.bankbackend.exception.ThrowUtils;
 import com.king.bankbackend.mapper.UserMapper;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
@@ -53,6 +52,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 修改用户个人资料
+     *
      * @param updateProfileRequest
      * @return
      */
@@ -65,8 +65,18 @@ public class UserServiceImpl implements UserService {
         String address = updateProfileRequest.getAddress();
         String imageurl = updateProfileRequest.getImageurl();
         Long userId = BaseContext.getCurrentId();
-        Boolean result = userMapper.updateProfile(username, gender, telephone, address, imageurl,userId);
+        Boolean result = userMapper.updateProfile(username, gender, telephone, address, imageurl, userId);
         return result;
+    }
+
+    /**
+     * 修改用户头像
+     *
+     * @param url
+     */
+    public Boolean updateAvatar(String url) {
+        Long userId = BaseContext.getCurrentId();
+        return userMapper.updateProfile(null, null, null, null, url, userId);
     }
 
 }

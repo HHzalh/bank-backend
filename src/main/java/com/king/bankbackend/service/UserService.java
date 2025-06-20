@@ -1,5 +1,6 @@
 package com.king.bankbackend.service;
 
+import com.king.bankbackend.common.BaseResponse;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
 import com.king.bankbackend.model.entity.User;
@@ -26,4 +27,10 @@ public interface UserService {
      * @return
      */
     Boolean updateProfile(UpdateProfileRequest updateProfileRequest);
+
+    /**
+     * 修改用户头像
+     * @param url
+     */
+    Boolean  updateAvatar(String url);
 }

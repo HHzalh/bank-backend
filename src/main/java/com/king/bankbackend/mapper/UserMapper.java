@@ -1,6 +1,8 @@
 package com.king.bankbackend.mapper;
 
 
+import com.king.bankbackend.annotation.AutoFill;
+import com.king.bankbackend.constant.OperationType;
 import com.king.bankbackend.model.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -36,5 +38,6 @@ public interface UserMapper {
      * @param imageurl
      * @param userId
      */
+    @AutoFill(value = OperationType.UPDATE)
     Boolean updateProfile(String username, String gender, String telephone, String address, String imageurl, Long userId);
 }
