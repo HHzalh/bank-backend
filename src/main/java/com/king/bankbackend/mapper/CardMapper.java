@@ -101,9 +101,10 @@ public interface CardMapper {
      * 新增银行卡
      *
      * @param card
+     * @return 插入成功的记录数
      */
     @AutoFill(value = OperationType.INSERT)
-    void insert(Card card);
+    int insert(Card card);
 
     /**
      * 更新银行卡

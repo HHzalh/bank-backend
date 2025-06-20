@@ -59,8 +59,10 @@ public class CustomerServiceImpl implements CustomerService {
             log.error("登录失败，账号不存在：{}", account);
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        //密码对比
-        //password = DigestUtils.md5DigestAsHex(password.getBytes());
+
+        //密码加密
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+
         if (!password.equals(user.getPassword())) {
             //密码错误
             log.error("登录失败，密码错误，账号：{}", account);

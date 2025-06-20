@@ -2,6 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.king.bankbackend.mapper.UserMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userid">
+        insert into userinfo (userName, PID, gender, telephone, address, imageUrl, role, account, password, create_time,
+                              update_time)
+        values (#{username}, #{pid}, #{gender}, #{telephone}, #{address}, #{imageurl}, #{role}, #{account}, #{password},
+                #{createTime}, #{updateTime})
+    </insert>
     <!-- 更新用户信息 -->
     <update id="updateProfile" parameterType="map">
         UPDATE userInfo

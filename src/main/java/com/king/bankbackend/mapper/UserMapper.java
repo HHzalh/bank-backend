@@ -1,6 +1,8 @@
 package com.king.bankbackend.mapper;
 
 
+import com.king.bankbackend.annotation.AutoFill;
+import com.king.bankbackend.constant.OperationType;
 import com.king.bankbackend.model.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -37,4 +39,13 @@ public interface UserMapper {
      * @param userId
      */
     Boolean updateProfile(String username, String gender, String telephone, String address, String imageurl, Long userId);
+
+    /**
+     * 插入用户数据
+     *
+     * @param user
+     * @return 插入成功的记录数
+     */
+    @AutoFill(value = OperationType.INSERT)
+    int insert(User user);
 }
