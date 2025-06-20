@@ -38,6 +38,7 @@ public interface UserMapper {
      * @param imageurl
      * @param userId
      */
+    @AutoFill(value = OperationType.UPDATE)
     Boolean updateProfile(String username, String gender, String telephone, String address, String imageurl, Long userId);
 
     /**
