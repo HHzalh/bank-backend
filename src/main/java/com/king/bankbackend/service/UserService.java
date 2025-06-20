@@ -1,7 +1,9 @@
 package com.king.bankbackend.service;
 
+import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
+import com.king.bankbackend.model.dto.UserRegisterRequest;
 import com.king.bankbackend.model.entity.User;
 import com.king.bankbackend.model.vo.LoginUserVO;
 
@@ -26,4 +28,11 @@ public interface UserService {
      * @return
      */
     Boolean updateProfile(UpdateProfileRequest updateProfileRequest);
+
+    /**
+     * 用户注册
+     * @param customerDTO
+     * @return
+     */
+    Boolean userRegister(CustomerDTO customerDTO);
 }

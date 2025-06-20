@@ -3,6 +3,7 @@ package com.king.bankbackend.controller.user;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.king.bankbackend.common.BaseResponse;
+import com.king.bankbackend.common.PageResult;
 import com.king.bankbackend.common.Result;
 import com.king.bankbackend.constant.JwtClaimsConstant;
 import com.king.bankbackend.exception.BusinessException;
@@ -14,12 +15,15 @@ import com.king.bankbackend.model.vo.CardVO;
 import com.king.bankbackend.model.vo.LoginUserVO;
 import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.service.CardService;
+import com.king.bankbackend.service.TradeService;
 import com.king.bankbackend.service.UserService;
 import com.king.bankbackend.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +42,9 @@ public class UserController {
 
     @Autowired
     private JwtProperties jwtProperties;
+
+    @Autowired
+     private TradeService tradeService;
 
     /**
      * 用户登录
@@ -62,6 +69,19 @@ public class UserController {
         BeanUtil.copyProperties(user,loginUserVO);
         loginUserVO.setToken(token);
         return Result.success(loginUserVO);
+    }
+
+    /**
+     * 用户注册
+     * @param customerDTO
+     * @return
+     */
+    @PostMapping("/user/register")
+    public BaseResponse<String> userRegister(@RequestBody CustomerDTO customerDTO) {
+        ThrowUtils.throwIf(customerDTO == null, ErrorCode.PARAMS_ERROR);
+        //注册用户
+        Boolean result = userService.userRegister(customerDTO);
+        return Result.success("用户注册完成，自动开卡成功");
     }
 
     /**
@@ -200,4 +220,26 @@ public class UserController {
         }
         return Result.success(cards);
     }
+
+    /**
+     * 范围分页查询交易记录
+     *
+     * @param tradeQueryDTO
+     * @param begin
+     * @param end
+     * @return
+     */
+    @PostMapping("/pageTradeUser")
+    public BaseResponse<PageResult> pageTrade(
+            @RequestBody TradeQueryDTO tradeQueryDTO,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end) {
+        
+        log.info("用户查询交易记录，查询条件：{}, 开始日期：{}, 结束日期：{}", tradeQueryDTO, begin, end);
+        
+        PageResult pageResult = tradeService.pageTradeByuser(tradeQueryDTO, begin, end);
+        
+        return Result.success(pageResult);
+    }
+
 }

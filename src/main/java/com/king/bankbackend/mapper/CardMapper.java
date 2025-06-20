@@ -30,7 +30,6 @@ public interface CardMapper {
      * @param amount
      * @return
      */
-    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET balance = balance + #{amount}, savingID = #{savingid} WHERE cardID = #{cardid}")
     int depositByCardId(String cardid, Long savingid, Long amount);
 
@@ -42,7 +41,6 @@ public interface CardMapper {
      * @param remark
      * @return
      */
-    @AutoFill(value = OperationType.UPDATE)
     @Insert("INSERT INTO tradeInfo (tradeType, cardID, tradeMoney, remark) VALUES (#{tradeType}, #{cardid}, #{amount}, #{remark})")
     int insertTradeRecord(String tradeType, String cardid, Long amount, String remark);
 
@@ -66,14 +64,12 @@ public interface CardMapper {
      * @param cardid 银行卡号
      * @param amount 取款金额
      */
-    @AutoFill(value = OperationType.UPDATE)
     void withdrawByCardId(String cardid, Long amount);
 
     /**
      * 向指定银行卡号转账
      * @param cardid
      */
-    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET balance = balance + #{amount} WHERE cardID = #{cardid}")
     void transfer(String cardid,Long amount);
 
@@ -82,7 +78,6 @@ public interface CardMapper {
      * @param cardId
      * @return
      */
-    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET IsReportLoss = #{isLoss} WHERE cardID = #{cardId}")
     Boolean reportLossByCardId(String cardId,String isLoss);
 
@@ -91,7 +86,7 @@ public interface CardMapper {
      * @param cardid
      * @param newPassword
      */
-    @AutoFill(value = OperationType.UPDATE)
+
     @Update("UPDATE cardInfo SET pass = #{newPassword} WHERE cardID = #{cardid}")
     Boolean changedPwd(String cardid, String newPassword);
 
