@@ -67,4 +67,13 @@ public interface DepositMapper {
      * @return
      */
     Page<DepositQueryVO> pageQuery(DepositQueryDTO depositQueryDTO, LocalDateTime beginDateTime, LocalDateTime endDateTime);
-} 
+
+    /**
+     * 统计使用指定存款类型的存款记录数量
+     *
+     * @param savingid 存款类型ID
+     * @return 使用该存款类型的记录数量
+     */
+    @Select("SELECT COUNT(*) FROM cardinfo WHERE savingID = #{savingid}")
+    int countDeposit(Long savingid);
+}

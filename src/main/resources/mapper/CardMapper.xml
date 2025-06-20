@@ -29,6 +29,12 @@
         where cardid = #{cardid}
     </delete>
 
+    <delete id="deleteByUserId">
+        delete
+        from cardinfo
+        WHERE customerID = #{userid}
+    </delete>
+
     <select id="pageQuery" parameterType="com.king.bankbackend.model.dto.CardQueryDTO"
             resultType="com.king.bankbackend.model.vo.CardQueryVO">
         select * from cardinfo c
@@ -70,7 +76,7 @@
         SET balance = balance - #{amount}
         WHERE cardID = #{cardid}
     </update>
-    <update id="updateProfile"></update>
+
     <!--获取银行卡号-->
     <select id="getCards" parameterType="java.lang.Long" resultType="com.king.bankbackend.model.vo.CardVO">
         SELECT cardID,
@@ -81,4 +87,18 @@
         FROM cardInfo
         WHERE customerID = #{userId}
     </select>
+
+    <update id="updateCardName">
+        UPDATE cardinfo
+        SET customerName = #{username}
+        WHERE cardID = #{cardid}
+    </update>
+
+    <select id="findCardsByUserIdWithBalance" resultType="com.king.bankbackend.model.vo.CardVO">
+        SELECT *
+        FROM cardinfo
+        WHERE customerID = #{userid}
+          AND balance > 0
+    </select>
+
 </mapper> 

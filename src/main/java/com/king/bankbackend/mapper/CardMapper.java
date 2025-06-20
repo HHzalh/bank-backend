@@ -170,4 +170,30 @@ public interface CardMapper {
      * @return
      */
     Page<CardQueryVO> pageQuery(CardQueryDTO cardQueryDTO, LocalDateTime beginDateTime, LocalDateTime endDateTime);
-} 
+
+    /**
+     * 根据银行卡号更新银行卡的客户信息
+     *
+     * @param cardid
+     * @param username
+     */
+    void updateCardName(String cardid, String username);
+
+    /**
+     * 根据用户id查询余额不为0的银行卡列表
+     *
+     * @param userid
+     * @return
+     */
+    List<CardVO> findCardsByUserIdWithBalance(Long userid);
+
+
+    /**
+     * 根据用户ID删除所有银行卡
+     *
+     * @param userid 用户ID
+     * @return 删除的记录数
+     */
+    int deleteByUserId(Long userid);
+
+}

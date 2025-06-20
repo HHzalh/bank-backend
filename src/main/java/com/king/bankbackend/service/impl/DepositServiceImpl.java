@@ -106,7 +106,13 @@ public class DepositServiceImpl implements DepositService {
         if (existingDeposit == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "存款类型不存在");
         }
-        // TODO: 如果有客户正在使用该存款类型，无法删除
+        // 检查是否有存款记录正在使用该存款类型
+        int count = depositMapper.countDeposit(savingid);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,
+                    "该存款类型正在被" + count + "条存款记录使用，无法删除");
+        }
+
         depositMapper.deleteById(savingid);
     }
 

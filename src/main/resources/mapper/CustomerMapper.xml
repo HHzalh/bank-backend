@@ -12,8 +12,8 @@
     <update id="update">
         update userinfo
         <set>
-            <if test="username != null">username = #{username},</if>
-            <if test="pid != null">pid = #{pid},</if>
+            <if test="username != null">userName = #{username},</if>
+            <if test="pid != null">PID = #{pid},</if>
             <if test="gender != null">gender = #{gender},</if>
             <if test="telephone != null">telephone = #{telephone},</if>
             <if test="address != null">address = #{address},</if>

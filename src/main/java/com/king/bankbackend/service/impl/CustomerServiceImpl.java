@@ -4,21 +4,22 @@ package com.king.bankbackend.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.king.bankbackend.common.PageResult;
-import com.king.bankbackend.constant.ImageUrlConstant;
-import com.king.bankbackend.constant.LocalDateConstant;
-import com.king.bankbackend.constant.PasswordConstant;
-import com.king.bankbackend.constant.RoleConstant;
+import com.king.bankbackend.constant.*;
 import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.exception.BusinessException;
 import com.king.bankbackend.exception.ErrorCode;
+import com.king.bankbackend.mapper.CardMapper;
 import com.king.bankbackend.mapper.CustomerMapper;
 import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.CustomerLoginDTO;
 import com.king.bankbackend.model.dto.CustomerQueryDTO;
 import com.king.bankbackend.model.dto.CustomerUpdateDTO;
+import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.entity.User;
+import com.king.bankbackend.model.vo.CardVO;
 import com.king.bankbackend.model.vo.CustomerQueryVO;
 import com.king.bankbackend.service.CustomerService;
+import com.king.bankbackend.utils.BankCardIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,6 +40,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerMapper customerMapper;
+
+    @Autowired
+    private CardMapper cardMapper;
 
     /**
      * 用户登录
@@ -86,7 +91,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     /**
-     * 新增用户
+     * 新增用户且实现自动开卡
      *
      * @param customerDTO
      */
@@ -122,7 +127,28 @@ public class CustomerServiceImpl implements CustomerService {
         user.setRole(RoleConstant.DEFAULT_USER);
         user.setImageurl(ImageUrlConstant.DEFAULT_IMAGE_URL);
 
+        Card card = new Card();
+        //随机生成银行卡号格式为10103576xxxxxxxx
+        String cardId = BankCardIdGenerator.generate();
+        // 检查卡号是否已存在
+        Card existingCard = cardMapper.getByCardNumber(cardId);
+        if (existingCard != null) {
+            cardId = BankCardIdGenerator.generate();
+        }
+        card.setCardid(cardId);
+        card.setCurid("RMB");
+        card.setSavingid(1L);
+        card.setOpendate(LocalDate.now());
+        card.setBalance(BigDecimal.valueOf(10));
+        card.setOpenmoney(BigDecimal.valueOf(10));
+        card.setPass(PasswordConstant.DEFAULT_CARD_PASSWORD);
+        card.setIsreportloss(CardConstant.DEFAULT_NOT_REPORT_LOSS);
+        card.setCustomerid(user.getUserid());
+        card.setCustomername(user.getUsername());
+
         customerMapper.insert(user);
+        //新增用户后实现自动开卡
+        cardMapper.insert(card);
     }
 
     /**
@@ -138,7 +164,15 @@ public class CustomerServiceImpl implements CustomerService {
 
         User user = new User();
         BeanUtils.copyProperties(customerUpdateDTO, user);
+        // 更新用户信息
         customerMapper.update(user);
+
+        // 如果用户名被修改，同步更新银行卡表中的用户名
+        List<CardVO> list = cardMapper.getCards(user.getUserid());
+        for (CardVO cardVO : list) {
+            String cardid = cardVO.getCardid();
+            cardMapper.updateCardName(cardid, user.getUsername());
+        }
     }
 
     /**
@@ -155,9 +189,22 @@ public class CustomerServiceImpl implements CustomerService {
             //log.error("删除失败，用户不存在，ID：{}", id);
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
         }
-        //  TODO：后续优化删除需要连带用户连带的银行卡信息一起删除
+        // 如果用户存在的银行卡余额有一张不为0就不能删除用户
+
+        // 检查用户是否有余额不为0的银行卡
+        List<CardVO> cardsWithBalance = cardMapper.findCardsByUserIdWithBalance(id);
+        if (cardsWithBalance != null && !cardsWithBalance.isEmpty()) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,
+                    "用户名下有" + cardsWithBalance.size() + "张银行卡仍有余额，无法删除用户");
+        }
+
+        //删除用户旗下的银行卡
+        cardMapper.deleteByUserId(id);
+
         // 删除用户
         customerMapper.deleteById(id);
+
+
         log.info("用户删除成功，ID：{}", id);
     }
 
@@ -203,5 +250,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         return new PageResult(total, records);
     }
+
+
 }
 
