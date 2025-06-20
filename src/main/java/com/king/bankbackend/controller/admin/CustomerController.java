@@ -15,10 +15,12 @@ import com.king.bankbackend.model.vo.CustomerLoginVO;
 import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.service.CustomerService;
 import com.king.bankbackend.utils.JwtUtil;
+import com.king.bankbackend.utils.TencentCosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -34,6 +36,9 @@ public class CustomerController {
 
     @Autowired
     private JwtProperties jwtProperties;
+
+    @Autowired
+    private TencentCosUtils tencentCosUtils;
 
     /**
      * 管理员登录
@@ -124,5 +129,32 @@ public class CustomerController {
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end) {
         PageResult pageResult = customerService.pageCustomer(customerQueryDTO, begin, end);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 上传图片到腾讯云对象存储
+     *
+     * @param file 上传的图片文件
+     */
+    @PostMapping("/uploadImage")
+    public BaseResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        // 检查文件是否为空
+        ThrowUtils.throwIf(file == null || file.isEmpty(), ErrorCode.PARAMS_ERROR, "上传文件不能为空");
+
+        // 检查文件类型是否为图片
+        String contentType = file.getContentType();
+        ThrowUtils.throwIf(contentType == null || !contentType.startsWith("image/"),
+                ErrorCode.PARAMS_ERROR, "只能上传图片文件");
+
+        try {
+            // 调用腾讯云工具类上传图片
+            String imageUrl = tencentCosUtils.uploadFile(file);
+            log.info("图片上传成功，URL: {}", imageUrl);
+
+            return Result.success(imageUrl);
+        } catch (Exception e) {
+            log.error("图片上传失败", e);
+            return new BaseResponse<>(ErrorCode.SYSTEM_ERROR.getCode(), null, "图片上传失败");
+        }
     }
 }

@@ -25,27 +25,32 @@ public interface CardMapper {
 
     /**
      * 存款
+     *
      * @param cardid
      * @param savingid
      * @param amount
      * @return
      */
+    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET balance = balance + #{amount}, savingID = #{savingid} WHERE cardID = #{cardid}")
     int depositByCardId(String cardid, Long savingid, Long amount);
 
     /**
      * 插入交易信息
+     *
      * @param tradeType
      * @param cardid
      * @param amount
      * @param remark
      * @return
      */
+    @AutoFill(value = OperationType.UPDATE)
     @Insert("INSERT INTO tradeInfo (tradeType, cardID, tradeMoney, remark) VALUES (#{tradeType}, #{cardid}, #{amount}, #{remark})")
     int insertTradeRecord(String tradeType, String cardid, Long amount, String remark);
 
     /**
      * 获取银行卡余额
+     *
      * @param cardid
      * @return
      */
@@ -54,6 +59,7 @@ public interface CardMapper {
 
     /**
      * 获取银行卡密码
+     *
      * @param cardid 银行卡号
      * @return 密码
      */
@@ -61,37 +67,45 @@ public interface CardMapper {
 
     /**
      * 执行取款操作
+     *
      * @param cardid 银行卡号
      * @param amount 取款金额
      */
+    @AutoFill(value = OperationType.UPDATE)
     void withdrawByCardId(String cardid, Long amount);
 
     /**
      * 向指定银行卡号转账
+     *
      * @param cardid
      */
+    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET balance = balance + #{amount} WHERE cardID = #{cardid}")
-    void transfer(String cardid,Long amount);
+    void transfer(String cardid, Long amount);
 
     /**
      * 银行卡挂失
+     *
      * @param cardId
      * @return
      */
+    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET IsReportLoss = #{isLoss} WHERE cardID = #{cardId}")
-    Boolean reportLossByCardId(String cardId,String isLoss);
+    Boolean reportLossByCardId(String cardId, String isLoss);
 
     /**
      * 修改密码
+     *
      * @param cardid
      * @param newPassword
      */
-
+    @AutoFill(value = OperationType.UPDATE)
     @Update("UPDATE cardInfo SET pass = #{newPassword} WHERE cardID = #{cardid}")
     Boolean changedPwd(String cardid, String newPassword);
 
     /**
      * 根据用户ID查询银行卡列表
+     *
      * @param userId 用户ID
      * @return 银行卡列表
      */
@@ -101,7 +115,6 @@ public interface CardMapper {
      * 新增银行卡
      *
      * @param card
-     * @return 插入成功的记录数
      */
     @AutoFill(value = OperationType.INSERT)
     int insert(Card card);

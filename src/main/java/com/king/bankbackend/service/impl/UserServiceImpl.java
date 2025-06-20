@@ -1,9 +1,5 @@
 package com.king.bankbackend.service.impl;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.king.bankbackend.constant.CardConstant;
 import com.king.bankbackend.constant.ImageUrlConstant;
 import com.king.bankbackend.constant.PasswordConstant;
@@ -11,17 +7,14 @@ import com.king.bankbackend.constant.RoleConstant;
 import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.exception.BusinessException;
 import com.king.bankbackend.exception.ErrorCode;
-import com.king.bankbackend.exception.ThrowUtils;
 import com.king.bankbackend.mapper.CardMapper;
 import com.king.bankbackend.mapper.CustomerMapper;
 import com.king.bankbackend.mapper.UserMapper;
 import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
-import com.king.bankbackend.model.dto.UserRegisterRequest;
 import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.entity.User;
-import com.king.bankbackend.service.CardService;
 import com.king.bankbackend.service.UserService;
 import com.king.bankbackend.utils.BankCardIdGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Service
 @Slf4j
@@ -53,17 +49,15 @@ public class UserServiceImpl implements UserService {
         String account = userLoginRequest.getAccount();
         String password = userLoginRequest.getPassword();
 
-        //密码加密
+        //加密
         password = DigestUtils.md5DigestAsHex(password.getBytes());
-        
+
         //根据账户查询数据库中的数据
         User user = userMapper.getByAccount(account);
         if (user == null) {
             //账号不存在
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        //密码对比
-        //password = DigestUtils.md5DigestAsHex(password.getBytes());
         if (!password.equals(user.getPassword())) {
             //密码错误
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
@@ -81,6 +75,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 修改用户个人资料
+     *
      * @param updateProfileRequest
      * @return
      */
@@ -93,12 +88,13 @@ public class UserServiceImpl implements UserService {
         String address = updateProfileRequest.getAddress();
         String imageurl = updateProfileRequest.getImageurl();
         Long userId = BaseContext.getCurrentId();
-        Boolean result = userMapper.updateProfile(username, gender, telephone, address, imageurl,userId);
+        Boolean result = userMapper.updateProfile(username, gender, telephone, address, imageurl, userId);
         return result;
     }
 
     /**
      * 用户注册
+     *
      * @param customerDTO
      * @return
      */
@@ -138,19 +134,19 @@ public class UserServiceImpl implements UserService {
         try {
             // 执行插入操作
             int result = userMapper.insert(user);
-            
+
             if (result <= 0) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户注册失败");
             }
-            
+
             // 获取插入后的用户ID
             Long userId = user.getUserid();
             if (userId == null) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户注册失败，无法获取用户ID");
             }
-            
+
             log.info("用户注册成功，用户ID：{}", userId);
-            
+
             //新增银行卡
             Card card = new Card();
             card.setCardid(BankCardIdGenerator.generate());
@@ -159,21 +155,32 @@ public class UserServiceImpl implements UserService {
             card.setCurid("RMB");
             card.setOpenmoney(new BigDecimal(10));
             card.setBalance(new BigDecimal(10));
-            card.setPass(PasswordConstant.DEFAULT_CARD_PASSWORD);
+            //设置默认密码，且加密
+            card.setPass(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_CARD_PASSWORD.getBytes()));
             card.setIsreportloss(CardConstant.DEFAULT_NOT_REPORT_LOSS);
             card.setCustomerid(userId);
             card.setCustomername(user.getUsername());
-            
+
             int cardResult = cardMapper.insert(card);
             if (cardResult <= 0) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "银行卡开通失败");
             }
-            
+
             return true;
         } catch (Exception e) {
             log.error("用户注册失败", e);
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户注册失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 修改用户头像
+     *
+     * @param url
+     */
+    public Boolean updateAvatar(String url) {
+        Long userId = BaseContext.getCurrentId();
+        return userMapper.updateProfile(null, null, null, null, url, userId);
     }
 
 }

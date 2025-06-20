@@ -17,6 +17,7 @@ public interface CardService {
 
     /**
      * 存款
+     *
      * @param depositRequest
      * @return
      */
@@ -24,6 +25,7 @@ public interface CardService {
 
     /**
      * 取款
+     *
      * @param withdrawRequest
      * @return
      */
@@ -31,12 +33,14 @@ public interface CardService {
 
     /**
      * 转账
+     *
      * @param transferRequest
      */
     Boolean transfer(TransferRequest transferRequest);
 
     /**
      * 根据卡号查询余额
+     *
      * @param cardId
      * @return
      */
@@ -44,12 +48,14 @@ public interface CardService {
 
     /**
      * 挂失银行卡
+     *
      * @param reportLossRequest
      */
     Boolean reportLossByCardId(ReportLossRequest reportLossRequest);
 
     /**
      * 修改银行卡密码
+     *
      * @param changedPwdRequest
      * @return
      */
@@ -58,6 +64,7 @@ public interface CardService {
 
     /**
      * 获取当前用户银行卡集合
+     *
      * @return
      */
     List<CardVO> getCards();

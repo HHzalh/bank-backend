@@ -29,12 +29,12 @@ public interface TradeService {
     PageResult pageTrade(TradeQueryDTO tradeQueryDTO, LocalDate begin, LocalDate end);
 
     /**
-     *  用户范围分页查询交易记录
+     * 用户范围分页查询交易记录
      *
      * @param tradeQueryDTO
      * @param begin
      * @param end
      * @return
      */
-    PageResult  pageTradeByuser(TradeQueryDTO tradeQueryDTO, LocalDate begin, LocalDate end);
+    PageResult pageTradeByuser(TradeQueryDTO tradeQueryDTO, LocalDate begin, LocalDate end);
 }
