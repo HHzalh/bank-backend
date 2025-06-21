@@ -17,6 +17,8 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/*.xml  # 指定 XML 映射文件位置
   type-aliases-package: com.king.bankbackend.entity  # 实体类包名
+  configuration:
+    map-underscore-to-camel-case: true  # 开启驼峰命名转换
 knife4j:
   enable: true
   openapi:
