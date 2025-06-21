@@ -1,45 +1,50 @@
 server:
   port: 8080
+  servlet:
+    context-path: /api
 spring:
   application:
     name: bankbackend
   servlet:
     multipart:
       max-file-size: 10MB
-  #?????
+  #数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/bank
     username: root
-    password: 1234
-
-# JWT配置
-king:
-  jwt:
-    # 管理员JWT配置
-    admin-secret-key: kingdaiking
-    admin-ttl: 7200000
-    admin-token-name: token
-    # 用户JWT配置
-    user-secret-key: kingdaiuser
-    user-ttl: 7200000
-    user-token-name: token
-
+    password: 123456
+mybatis:
+  mapper-locations: classpath:mapper/*.xml  # 指定 XML 映射文件位置
+  type-aliases-package: com.king.bankbackend.entity  # 实体类包名
 knife4j:
   enable: true
   openapi:
     version: v1.0
     group:
       default:
-        group-name: ????
+        group-name: 默认分组
         api-rule: package
         api-rule-resources:
-          - com.king.bankbackend.controller
-# ????????????????
-#cos:
-#  client:
-#    host:
-#    secretId:
-#    secretKey:
-#    region:
-#    bucket:
+          - com.yb.cloudPictrueBackend.controller
+king:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    admin-secret-key: king-admin
+    # 设置jwt过期时间
+    admin-ttl: 86400
+    # 设置前端传递过来的令牌名称
+    admin-token-name: token
+    # 用户JWT配置
+    user-secret-key: king-user
+    user-ttl: 86400
+    user-token-name: token
+
+# 对象存储配置（需要从腾讯云获取）
+cos:
+  client:
+    host: https://存储桶域名.cos.地区.myqcloud.com
+    secretId: SecretId
+    secretKey: SecretKey
+    region: Region，如ap-guangzhou
+    bucket: 存储桶名称
