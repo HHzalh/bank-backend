@@ -10,6 +10,7 @@ import com.king.bankbackend.exception.ErrorCode;
 import com.king.bankbackend.mapper.CardMapper;
 import com.king.bankbackend.mapper.CustomerMapper;
 import com.king.bankbackend.mapper.UserMapper;
+import com.king.bankbackend.model.dto.ChangedUserPwdRequest;
 import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
@@ -181,6 +182,47 @@ public class UserServiceImpl implements UserService {
     public Boolean updateAvatar(String url) {
         Long userId = BaseContext.getCurrentId();
         return userMapper.updateProfile(null, null, null, null, url, userId);
+    }
+
+    /**
+     * 修改用户密码
+     *
+     * @param changedUserPwdRequest
+     * @return
+     */
+    @Override
+    public Boolean changedUserPwd(ChangedUserPwdRequest changedUserPwdRequest) {
+        // 获取当前用户ID
+        Long userId = BaseContext.getCurrentId();
+
+        // 获取请求中的旧密码和新密码
+        String oldPassword = changedUserPwdRequest.getOldPassword();
+        String newPassword = changedUserPwdRequest.getNewPassword();
+
+        // 参数校验
+        if (!StringUtils.hasText(oldPassword) || !StringUtils.hasText(newPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码不能为空");
+        }
+
+        // 将旧密码加密后与数据库中的密码进行比对
+        String encryptedOldPassword = DigestUtils.md5DigestAsHex(oldPassword.getBytes());
+
+        // 获取当前用户
+        User user = userMapper.getById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+
+        // 校验旧密码是否正确
+        if (!encryptedOldPassword.equals(user.getPassword())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "旧密码不正确");
+        }
+
+        // 加密新密码
+        String encryptedNewPassword = DigestUtils.md5DigestAsHex(newPassword.getBytes());
+
+        // 更新密码
+        return userMapper.updatePassword(userId, encryptedNewPassword);
     }
 
 }

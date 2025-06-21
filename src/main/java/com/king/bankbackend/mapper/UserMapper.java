@@ -6,6 +6,7 @@ import com.king.bankbackend.constant.OperationType;
 import com.king.bankbackend.model.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface UserMapper {
@@ -48,4 +49,14 @@ public interface UserMapper {
      */
     @AutoFill(value = OperationType.INSERT)
     int insert(User user);
+
+    /**
+     * 修改用户密码
+     *
+     * @param userId   用户ID
+     * @param password
+     * @return 是否成功
+     */
+    @Update("update userInfo set password = #{password}, update_time = now() where userID = #{userId}")
+    Boolean updatePassword(Long userId, String password);
 }

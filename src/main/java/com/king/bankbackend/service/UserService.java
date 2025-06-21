@@ -1,5 +1,6 @@
 package com.king.bankbackend.service;
 
+import com.king.bankbackend.model.dto.ChangedUserPwdRequest;
 import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
@@ -44,5 +45,13 @@ public interface UserService {
      * @param url
      */
     Boolean updateAvatar(String url);
+
+    /**
+     * 修改用户密码
+     *
+     * @param changedUserPwdRequest
+     * @return
+     */
+    Boolean changedUserPwd(ChangedUserPwdRequest changedUserPwdRequest);
 
 }

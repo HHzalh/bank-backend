@@ -248,7 +248,7 @@ public class UserController {
      * @param end
      * @return
      */
-    @PostMapping("/pageTradeUser")
+    @PostMapping("/trade/pageTradeUser")
     public BaseResponse<PageResult> pageTrade(
             @RequestBody TradeQueryDTO tradeQueryDTO,
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
@@ -287,6 +287,23 @@ public class UserController {
             log.error("图片上传失败", e);
             return new BaseResponse<>(ErrorCode.SYSTEM_ERROR.getCode(), null, "图片上传失败");
         }
+    }
+
+    /**
+     * 修改用户密码
+     *
+     * @param changedUserPwdRequest
+     * @return
+     */
+    @PutMapping("/user/changedUserPwd")
+    public BaseResponse changedUserPwd(@RequestBody ChangedUserPwdRequest changedUserPwdRequest) {
+        ThrowUtils.throwIf(changedUserPwdRequest == null, ErrorCode.PARAMS_ERROR);
+        // 修改用户密码
+        Boolean result = userService.changedUserPwd(changedUserPwdRequest);
+        if (!result) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "密码修改失败");
+        }
+        return Result.success(result);
     }
 
 }
