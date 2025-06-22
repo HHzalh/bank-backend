@@ -128,7 +128,7 @@ public class CustomerController {
             // 调用腾讯云工具类上传图片
             String imageUrl = tencentCosUtils.uploadFile(file);
             log.info("图片上传成功，URL: {}", imageUrl);
-
+            customerService.updateAvatar(imageUrl);
             return Result.success(imageUrl);
         } catch (Exception e) {
             log.error("图片上传失败", e);

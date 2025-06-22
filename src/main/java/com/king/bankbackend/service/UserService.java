@@ -10,14 +10,6 @@ import com.king.bankbackend.model.vo.LoginUserVO;
 public interface UserService {
 
     /**
-     * 用户登录
-     *
-     * @param userLoginRequest
-     * @return
-     */
-    User userLogin(UserLoginRequest userLoginRequest);
-
-    /**
      * 用户登录并返回带有token的登录结果
      *
      * @param userLoginRequest

@@ -78,4 +78,12 @@ public interface CustomerMapper {
      * @return
      */
     Page<CustomerQueryVO> pageQuery(CustomerQueryDTO customerQueryDTO, LocalDateTime beginDateTime, LocalDateTime endDateTime);
+
+    /**
+     * 管理学修改头像
+     *
+     * @param id
+     * @param imageUrl
+     */
+    void updateAvatar(Long id, String imageUrl);
 }

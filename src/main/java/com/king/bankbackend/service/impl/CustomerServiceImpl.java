@@ -57,24 +57,24 @@ public class CustomerServiceImpl implements CustomerService {
     private RedisUtil redisUtil;
 
     /**
-     * 用户登录
+     * 管理员登录并返回带有token的登录结果
      *
      * @param customerLoginDTO
-     * @return
+     * @return CustomerLoginVO包含管理员信息和token
      */
     @Override
-    public User login(CustomerLoginDTO customerLoginDTO) {
+    public CustomerLoginVO loginWithToken(CustomerLoginDTO customerLoginDTO) {
         String account = customerLoginDTO.getAccount();
         String password = customerLoginDTO.getPassword();
 
-        log.info("用户登录，账号：{}，密码：{}", account, password);
+        log.info("管理员登录，账号：{}", account);
 
         //根据账户查询数据库中的数据
         User user = customerMapper.getByAccount(account);
         if (user == null) {
             //账号不存在
             log.error("登录失败，账号不存在：{}", account);
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "账号或密码错误");
         }
 
         //密码加密
@@ -83,37 +83,34 @@ public class CustomerServiceImpl implements CustomerService {
         if (!password.equals(user.getPassword())) {
             //密码错误
             log.error("登录失败，密码错误，账号：{}", account);
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "账号或密码错误");
         }
-        log.info("登录成功，用户信息：{}", user);
-        return user;
-    }
 
-    /**
-     * 管理员登录并返回带有token的登录结果
-     *
-     * @param customerLoginDTO
-     * @return CustomerLoginVO包含管理员信息和token
-     */
-    @Override
-    public CustomerLoginVO loginWithToken(CustomerLoginDTO customerLoginDTO) {
-        // 登录验证
-        User user = login(customerLoginDTO);
-
-        // 查询Redis中是否已存在token
+        // 登录成功, 处理token
         String token = redisUtil.getAdminToken(user.getUserid());
 
-        // 如果Redis中不存在token，则生成新token并存入Redis
+        // 检查Redis中是否存在token，并校验其是否过期
+        if (token != null) {
+            try {
+                JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
+                log.info("Redis中存在有效管理员token，直接使用");
+            } catch (Exception e) {
+                log.info("Redis中管理员token已过期，重新生成");
+                token = null; // 标记为null，以便重新生成
+            }
+        }
+
+        // 如果token为null（Redis中不存在或已过期），则生成新token
         if (token == null) {
-            // 登录成功生成Jwt令牌
             Map<String, Object> claims = new HashMap<>();
             claims.put(JwtClaimsConstant.Admin_ID, user.getUserid());
             token = JwtUtil.createJWT(
                     jwtProperties.getAdminSecretKey(),
                     jwtProperties.getAdminTtl(),
                     claims);
-            // 存入Redis
+            // 存入Redis, 覆盖旧token
             redisUtil.setAdminToken(user.getUserid(), token);
+            log.info("生成新管理员token并存入Redis");
         }
 
         // 封装登录返回结果
@@ -297,6 +294,16 @@ public class CustomerServiceImpl implements CustomerService {
         List<CustomerQueryVO> records = page.getResult();
 
         return new PageResult(total, records);
+    }
+
+    /**
+     * 管理员修改头像
+     *
+     * @param imageUrl
+     */
+    public void updateAvatar(String imageUrl) {
+        Long id = BaseContext.getCurrentId();
+        customerMapper.updateAvatar(id, imageUrl);
     }
 
 

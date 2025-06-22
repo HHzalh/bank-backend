@@ -23,7 +23,17 @@
             <if test="password != null">password = #{password},</if>
             <if test="updateTime != null">update_time = #{updateTime}</if>
         </set>
-        where userId = #{userid}
+        where userID = #{userid}
+    </update>
+
+    <update id="updateAvatar">
+        update userinfo
+        <set>
+            <if test="imageurl != null">imageUrl = #{imageurl},</if>
+            <if test="updateTime != null">update_time = #{updateTime}</if>
+            update_time = NOW()
+        </set>
+        where userID = #{userid}
     </update>
 
     <delete id="deleteById">

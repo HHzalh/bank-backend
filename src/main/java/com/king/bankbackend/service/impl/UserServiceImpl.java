@@ -48,13 +48,12 @@ public class UserServiceImpl implements UserService {
     private RedisUtil redisUtil;
 
     /**
-     * 登录
+     * 用户登录并返回带有token的登录结果
      *
      * @param userLoginRequest
-     * @return
+     * @return LoginUserVO包含用户信息和token
      */
-    public User userLogin(UserLoginRequest userLoginRequest) {
-
+    public LoginUserVO userLoginWithToken(UserLoginRequest userLoginRequest) {
         //获取请求体中的账号密码
         String account = userLoginRequest.getAccount();
         String password = userLoginRequest.getPassword();
@@ -66,55 +65,38 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.getByAccount(account);
         if (user == null) {
             //账号不存在
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "账号或密码错误");
         }
         if (!password.equals(user.getPassword())) {
             //密码错误
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "账号或密码错误");
         }
-        // 查询Redis中是否已存在token
+
+        // 登录成功, 处理token
         String token = redisUtil.getUserToken(user.getUserid());
 
-        // 如果Redis中不存在token，则生成新token并存入Redis
+        // 检查Redis中是否存在token，并校验其是否过期
+        if (token != null) {
+            try {
+                JwtUtil.parseJWT(jwtProperties.getUserSecretKey(), token);
+                log.info("Redis中存在有效token，直接使用");
+            } catch (Exception e) {
+                log.info("Redis中token已过期，重新生成");
+                token = null; // 标记为null，以便重新生成
+            }
+        }
+
+        // 如果token为null（Redis中不存在或已过期），则生成新token
         if (token == null) {
-            // 登录成功生成Jwt令牌
             Map<String, Object> claims = new HashMap<>();
             claims.put(JwtClaimsConstant.USER_ID, user.getUserid());
             token = JwtUtil.createJWT(
                     jwtProperties.getUserSecretKey(),
                     jwtProperties.getUserTtl(),
                     claims);
-            // 存入Redis
+            // 将新token存入Redis,覆盖旧token
             redisUtil.setUserToken(user.getUserid(), token);
-        }
-        return user;
-    }
-
-
-    /**
-     * 用户登录并返回带有token的登录结果
-     *
-     * @param userLoginRequest
-     * @return LoginUserVO包含用户信息和token
-     */
-    public LoginUserVO userLoginWithToken(UserLoginRequest userLoginRequest) {
-        // 登录验证
-        User user = userLogin(userLoginRequest);
-
-        // 查询Redis中是否已存在token
-        String token = redisUtil.getUserToken(user.getUserid());
-
-        // 如果Redis中不存在token，则生成新token并存入Redis
-        if (token == null) {
-            // 登录成功生成Jwt令牌
-            Map<String, Object> claims = new HashMap<>();
-            claims.put(JwtClaimsConstant.USER_ID, user.getUserid());
-            token = JwtUtil.createJWT(
-                    jwtProperties.getUserSecretKey(),
-                    jwtProperties.getUserTtl(),
-                    claims);
-            // 存入Redis
-            redisUtil.setUserToken(user.getUserid(), token);
+            log.info("生成新token并存入Redis");
         }
 
         // 封装登录返回结果
@@ -289,15 +271,6 @@ public class UserServiceImpl implements UserService {
         if (result) {
             // 密码修改成功，删除Redis中的旧token
             redisUtil.deleteUserToken(userId);
-
-            // 生成新token并存入Redis
-            Map<String, Object> claims = new HashMap<>();
-            claims.put(JwtClaimsConstant.USER_ID, userId);
-            String token = JwtUtil.createJWT(
-                    jwtProperties.getUserSecretKey(),
-                    jwtProperties.getUserTtl(),
-                    claims);
-            redisUtil.setUserToken(userId, token);
         }
 
         return result;

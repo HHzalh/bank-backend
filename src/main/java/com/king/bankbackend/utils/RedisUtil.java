@@ -54,6 +54,16 @@ public class RedisUtil {
     }
 
     /**
+     * 获取token的剩余过期时间
+     *
+     * @param key
+     * @return 剩余时间（秒）
+     */
+    public Long getTtl(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
+    }
+
+    /**
      * 存储管理员token
      *
      * @param adminId 管理员ID

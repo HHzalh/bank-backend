@@ -13,14 +13,6 @@ import java.time.LocalDate;
 public interface CustomerService {
 
     /**
-     * 员工登录
-     *
-     * @param customerLoginDTO
-     * @return
-     */
-    User login(CustomerLoginDTO customerLoginDTO);
-
-    /**
      * 管理员登录并返回带有token的登录结果
      *
      * @param customerLoginDTO
@@ -65,4 +57,11 @@ public interface CustomerService {
      * @return
      */
     PageResult pageCustomer(CustomerQueryDTO customerQueryDTO, LocalDate begin, LocalDate end);
+
+    /**
+     * 管理员修改头像
+     *
+     * @param imageUrl
+     */
+    void updateAvatar(String imageUrl);
 }
