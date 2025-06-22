@@ -1,14 +1,10 @@
 package com.king.bankbackend.service.impl;
 
-import com.king.bankbackend.constant.CardConstant;
-import com.king.bankbackend.constant.ImageUrlConstant;
-import com.king.bankbackend.constant.PasswordConstant;
-import com.king.bankbackend.constant.RoleConstant;
+import com.king.bankbackend.constant.*;
 import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.exception.BusinessException;
 import com.king.bankbackend.exception.ErrorCode;
 import com.king.bankbackend.mapper.CardMapper;
-import com.king.bankbackend.mapper.CustomerMapper;
 import com.king.bankbackend.mapper.UserMapper;
 import com.king.bankbackend.model.dto.ChangedUserPwdRequest;
 import com.king.bankbackend.model.dto.CustomerDTO;
@@ -16,8 +12,12 @@ import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
 import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.entity.User;
+import com.king.bankbackend.model.vo.LoginUserVO;
+import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.service.UserService;
 import com.king.bankbackend.utils.BankCardIdGenerator;
+import com.king.bankbackend.utils.JwtUtil;
+import com.king.bankbackend.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,22 +28,31 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-
     @Autowired
     private UserMapper userMapper;
 
     @Autowired
-    private CustomerMapper customerMapper;
-
-    @Autowired
     private CardMapper cardMapper;
 
-    @Override
+    @Autowired
+    private JwtProperties jwtProperties;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    /**
+     * 登录
+     *
+     * @param userLoginRequest
+     * @return
+     */
     public User userLogin(UserLoginRequest userLoginRequest) {
 
         //获取请求体中的账号密码
@@ -63,10 +72,63 @@ public class UserServiceImpl implements UserService {
             //密码错误
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
+        // 查询Redis中是否已存在token
+        String token = redisUtil.getUserToken(user.getUserid());
+
+        // 如果Redis中不存在token，则生成新token并存入Redis
+        if (token == null) {
+            // 登录成功生成Jwt令牌
+            Map<String, Object> claims = new HashMap<>();
+            claims.put(JwtClaimsConstant.USER_ID, user.getUserid());
+            token = JwtUtil.createJWT(
+                    jwtProperties.getUserSecretKey(),
+                    jwtProperties.getUserTtl(),
+                    claims);
+            // 存入Redis
+            redisUtil.setUserToken(user.getUserid(), token);
+        }
         return user;
     }
 
-    @Override
+
+    /**
+     * 用户登录并返回带有token的登录结果
+     *
+     * @param userLoginRequest
+     * @return LoginUserVO包含用户信息和token
+     */
+    public LoginUserVO userLoginWithToken(UserLoginRequest userLoginRequest) {
+        // 登录验证
+        User user = userLogin(userLoginRequest);
+
+        // 查询Redis中是否已存在token
+        String token = redisUtil.getUserToken(user.getUserid());
+
+        // 如果Redis中不存在token，则生成新token并存入Redis
+        if (token == null) {
+            // 登录成功生成Jwt令牌
+            Map<String, Object> claims = new HashMap<>();
+            claims.put(JwtClaimsConstant.USER_ID, user.getUserid());
+            token = JwtUtil.createJWT(
+                    jwtProperties.getUserSecretKey(),
+                    jwtProperties.getUserTtl(),
+                    claims);
+            // 存入Redis
+            redisUtil.setUserToken(user.getUserid(), token);
+        }
+
+        // 封装登录返回结果
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtils.copyProperties(user, loginUserVO);
+        loginUserVO.setToken(token);
+        return loginUserVO;
+    }
+
+    /**
+     * 获取用户的所有信息
+     *
+     * @return
+     */
     public User getUserInfo() {
         Long curId = BaseContext.getCurrentId();
         //根据账户查询数据库中的数据
@@ -222,7 +284,23 @@ public class UserServiceImpl implements UserService {
         String encryptedNewPassword = DigestUtils.md5DigestAsHex(newPassword.getBytes());
 
         // 更新密码
-        return userMapper.updatePassword(userId, encryptedNewPassword);
+        boolean result = userMapper.updatePassword(userId, encryptedNewPassword);
+
+        if (result) {
+            // 密码修改成功，删除Redis中的旧token
+            redisUtil.deleteUserToken(userId);
+
+            // 生成新token并存入Redis
+            Map<String, Object> claims = new HashMap<>();
+            claims.put(JwtClaimsConstant.USER_ID, userId);
+            String token = JwtUtil.createJWT(
+                    jwtProperties.getUserSecretKey(),
+                    jwtProperties.getUserTtl(),
+                    claims);
+            redisUtil.setUserToken(userId, token);
+        }
+
+        return result;
     }
 
 }

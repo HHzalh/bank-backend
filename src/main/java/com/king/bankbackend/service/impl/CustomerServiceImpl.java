@@ -17,9 +17,13 @@ import com.king.bankbackend.model.dto.CustomerUpdateDTO;
 import com.king.bankbackend.model.entity.Card;
 import com.king.bankbackend.model.entity.User;
 import com.king.bankbackend.model.vo.CardVO;
+import com.king.bankbackend.model.vo.CustomerLoginVO;
 import com.king.bankbackend.model.vo.CustomerQueryVO;
+import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.service.CustomerService;
 import com.king.bankbackend.utils.BankCardIdGenerator;
+import com.king.bankbackend.utils.JwtUtil;
+import com.king.bankbackend.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +35,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -43,6 +49,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CardMapper cardMapper;
+
+    @Autowired
+    private JwtProperties jwtProperties;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 用户登录
@@ -78,11 +90,47 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     /**
+     * 管理员登录并返回带有token的登录结果
+     *
+     * @param customerLoginDTO
+     * @return CustomerLoginVO包含管理员信息和token
+     */
+    @Override
+    public CustomerLoginVO loginWithToken(CustomerLoginDTO customerLoginDTO) {
+        // 登录验证
+        User user = login(customerLoginDTO);
+
+        // 查询Redis中是否已存在token
+        String token = redisUtil.getAdminToken(user.getUserid());
+
+        // 如果Redis中不存在token，则生成新token并存入Redis
+        if (token == null) {
+            // 登录成功生成Jwt令牌
+            Map<String, Object> claims = new HashMap<>();
+            claims.put(JwtClaimsConstant.Admin_ID, user.getUserid());
+            token = JwtUtil.createJWT(
+                    jwtProperties.getAdminSecretKey(),
+                    jwtProperties.getAdminTtl(),
+                    claims);
+            // 存入Redis
+            redisUtil.setAdminToken(user.getUserid(), token);
+        }
+
+        // 封装登录返回结果
+        CustomerLoginVO customerLoginVO = CustomerLoginVO.builder()
+                .userId(user.getUserid())
+                .userName(user.getUsername())
+                .imageUrl(user.getImageurl())
+                .token(token)
+                .build();
+        return customerLoginVO;
+    }
+
+    /**
      * 获取管理员的全部信息
      *
      * @return
      */
-    @Override
     public User getAdminInfo() {
         Long curId = BaseContext.getCurrentId();
         //根据账户查询数据库中的数据

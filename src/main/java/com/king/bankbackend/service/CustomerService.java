@@ -6,6 +6,7 @@ import com.king.bankbackend.model.dto.CustomerLoginDTO;
 import com.king.bankbackend.model.dto.CustomerQueryDTO;
 import com.king.bankbackend.model.dto.CustomerUpdateDTO;
 import com.king.bankbackend.model.entity.User;
+import com.king.bankbackend.model.vo.CustomerLoginVO;
 
 import java.time.LocalDate;
 
@@ -18,6 +19,14 @@ public interface CustomerService {
      * @return
      */
     User login(CustomerLoginDTO customerLoginDTO);
+
+    /**
+     * 管理员登录并返回带有token的登录结果
+     *
+     * @param customerLoginDTO
+     * @return
+     */
+    CustomerLoginVO loginWithToken(CustomerLoginDTO customerLoginDTO);
 
     /**
      * 获取管理员信息

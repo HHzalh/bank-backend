@@ -5,6 +5,7 @@ import com.king.bankbackend.model.dto.CustomerDTO;
 import com.king.bankbackend.model.dto.UpdateProfileRequest;
 import com.king.bankbackend.model.dto.UserLoginRequest;
 import com.king.bankbackend.model.entity.User;
+import com.king.bankbackend.model.vo.LoginUserVO;
 
 public interface UserService {
 
@@ -15,6 +16,14 @@ public interface UserService {
      * @return
      */
     User userLogin(UserLoginRequest userLoginRequest);
+
+    /**
+     * 用户登录并返回带有token的登录结果
+     *
+     * @param userLoginRequest
+     * @return LoginUserVO包含用户信息和token
+     */
+    LoginUserVO userLoginWithToken(UserLoginRequest userLoginRequest);
 
     /**
      * 获取当前用户信息

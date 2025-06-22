@@ -4,6 +4,7 @@ import com.king.bankbackend.constant.JwtClaimsConstant;
 import com.king.bankbackend.context.BaseContext;
 import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.utils.JwtUtil;
+import com.king.bankbackend.utils.RedisUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +24,9 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
     @Autowired
     private JwtProperties jwtProperties;
 
+    @Autowired
+    private RedisUtil redisUtil;
+
     /**
      * 校验jwt
      *
@@ -41,9 +45,19 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
         try {
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
             Long adminId = Long.valueOf(claims.get(JwtClaimsConstant.Admin_ID).toString());
+
+            // 从Redis中获取token并进行比对
+            String redisToken = redisUtil.getAdminToken(adminId);
+            if (redisToken == null || !redisToken.equals(token)) {
+                log.error("管理员token无效或已过期");
+                response.setStatus(401);
+                return false;
+            }
+
             BaseContext.setCurrentId(adminId);
             return true;
         } catch (Exception ex) {
+            log.error("JWT解析异常: {}", ex.getMessage());
             response.setStatus(401);
             return false;
         }

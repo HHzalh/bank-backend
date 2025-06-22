@@ -1,11 +1,9 @@
 package com.king.bankbackend.controller.user;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import com.king.bankbackend.common.BaseResponse;
 import com.king.bankbackend.common.PageResult;
 import com.king.bankbackend.common.Result;
-import com.king.bankbackend.constant.JwtClaimsConstant;
 import com.king.bankbackend.exception.BusinessException;
 import com.king.bankbackend.exception.ErrorCode;
 import com.king.bankbackend.exception.ThrowUtils;
@@ -13,11 +11,9 @@ import com.king.bankbackend.model.dto.*;
 import com.king.bankbackend.model.entity.User;
 import com.king.bankbackend.model.vo.CardVO;
 import com.king.bankbackend.model.vo.LoginUserVO;
-import com.king.bankbackend.properties.JwtProperties;
 import com.king.bankbackend.service.CardService;
 import com.king.bankbackend.service.TradeService;
 import com.king.bankbackend.service.UserService;
-import com.king.bankbackend.utils.JwtUtil;
 import com.king.bankbackend.utils.TencentCosUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,24 +22,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/User")
 @Slf4j
 public class UserController {
 
-
     @Autowired
     private UserService userService;
 
     @Autowired
     private CardService cardService;
-
-    @Autowired
-    private JwtProperties jwtProperties;
 
     @Autowired
     private TradeService tradeService;
@@ -59,21 +49,9 @@ public class UserController {
      */
     @PostMapping("/user/login")
     public BaseResponse<LoginUserVO> loginUser(@RequestBody UserLoginRequest userLoginRequest) {
-
         ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
-        //登录
-        User user = userService.userLogin(userLoginRequest);
-        //登录成功生成Jwt令牌
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.USER_ID, user.getUserid());
-        String token = JwtUtil.createJWT(
-                jwtProperties.getUserSecretKey(),
-                jwtProperties.getUserTtl(),
-                claims);
-        //封装登录返回结果
-        LoginUserVO loginUserVO = new LoginUserVO();
-        BeanUtil.copyProperties(user, loginUserVO);
-        loginUserVO.setToken(token);
+        //登录并获取带有token的登录结果
+        LoginUserVO loginUserVO = userService.userLoginWithToken(userLoginRequest);
         return Result.success(loginUserVO);
     }
 
@@ -298,7 +276,7 @@ public class UserController {
     @PutMapping("/user/changedUserPwd")
     public BaseResponse changedUserPwd(@RequestBody ChangedUserPwdRequest changedUserPwdRequest) {
         ThrowUtils.throwIf(changedUserPwdRequest == null, ErrorCode.PARAMS_ERROR);
-        // 修改用户密码
+        // 修改用户密码(已在Service中处理token更新)
         Boolean result = userService.changedUserPwd(changedUserPwdRequest);
         if (!result) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "密码修改失败");
